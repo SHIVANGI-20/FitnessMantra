@@ -19,9 +19,6 @@ app.listen(port, () => {
    console.log(`Server started on port ${port}`)
 }); **/
 
-const host = 'localhost';
-const port = 3000;
-
 const host = '0.0.0.0';
 const port = process.env.PORT || 3000;
 
