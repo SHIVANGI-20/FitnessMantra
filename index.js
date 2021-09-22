@@ -13,7 +13,7 @@ app.get('/about', (req, res) => {
    res.send('FitnessMantra about page');
 });
 
-const port = process.env.port || 5000;
+const port = process.env.port || 6000;
 
 app.listen(port, () => {
    console.log(`Server started on port ${port}`)
