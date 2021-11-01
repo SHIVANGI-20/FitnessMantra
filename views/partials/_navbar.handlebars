@@ -8,21 +8,26 @@
          </button>
          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-               <a class="nav-link" aria-current="page" href="/">Home</a>
+               <a class="nav-link" aria-current="page" href="/index">Home</a>
                <a class="nav-link" href="/about">About</a>
                <a class="nav-link" href="/bodybuilding">Bodybuilding</a>
                <a class="nav-link" href="/yoga">Yoga</a>
                <a class="nav-link" href="/meditation">Meditation</a>
             </div>
-            <div class = "navbar-nav ml-auto">
+            {{#if user}}
+            <div class="navbar-nav ml-auto">
                <li class="nav-item dropdown">
-                  <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" id="navbarDropdownMenuLink">Video</a>
+                  <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                     id="navbarDropdownMenuLink">Video</a>
                   <div class="dropdown-menu">
-                     <a href="/ideas" class="dropdown-item">Video Submissions</a>
                      <a href="/ideas/add" class="dropdown-item">Add Video</a>
                   </div>
                </li>
+               <li class="nav-item">
+                  <a href="/users/logout" class="nav-link">Logout</a>
+               </li>
             </div>
+            {{/if}}
          </div>
       </div>
    </div>

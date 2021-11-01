@@ -1,11 +1,23 @@
 const express = require('express');
+const path = require('path');
 const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
+const flash = require('connect-flash');
+const session = require('express-session');
+const passport = require('passport');
 const mongoose = require('mongoose');
 const { Translate } = require('@google-cloud/translate').v2;
 
 const app = express();
+
+//load routes
+const ideas = require('./routes/ideas');
+const users = require('./routes/users');
+
+
+//Passport config
+require('./config/passport')(passport);
 
 //connect to mongoose
 mongoose.Promise = global.Promise;
@@ -15,10 +27,10 @@ mongoose.connect('mongodb+srv://Rohit:FitnessMantra@cluster0.2jkfx.mongodb.net/m
    .then(() => console.log('MongoDB connected'))
    .catch(err => console.log(err));
 
-
 //Load Video Model
 require('./models/Idea');
 const Idea = mongoose.model('ideas');
+
 
 //Handlebars middleware
 app.engine('handlebars', exphbs({
@@ -30,12 +42,43 @@ app.set('view engine', 'handlebars');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+//static folder middleware
+app.use(express.static(path.join(__dirname, 'public')));
+
 //method override middleware
 app.use(methodOverride('_method'));
 
+//express-session middleware
+app.use(session({
+   secret: 'secret',
+   resave: true,
+   saveUninitialized: true,
+ }));
+ 
+
+//passport middleware( after express-session only)
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(flash());
+
+//Global variables
+app.use(function(req, res, next){
+   res.locals.success_msg = req.flash('success_msg');
+   res.locals.error_msg = req.flash('error_msg');
+   res.locals.error = req.flash('error');
+   res.locals.user = req.user || null;
+   next();
+});
+
 //home page
-app.get('/', (req, res) => {
+app.get('/index', (req, res) => {
    res.render('index');
+});
+
+//Landing page
+app.get('/', (req, res) => {
+   res.render('landing');
 });
 
 //about route
@@ -58,27 +101,12 @@ app.get('/yoga', (req, res) => {
    res.render('yoga');
 });
 
-//Add idea form
-app.get('/ideas/add', (req, res) => {
-   res.render('ideas/add');
-});
 
-// Edit Idea Form
-app.get('/ideas/edit/:id', (req, res) => {
-   Idea.findOne({
-      _id: req.params.id
-   }).lean()
-   .then(idea => {
-      res.render('ideas/edit', {
-         idea: idea
-      });
-   });
- });
 
 //admin route
 app.get('/admin/password/enpm613', (req, res) => {
    Idea.find({}).lean()
-      .sort({date: 'desc'})
+      .sort({ date: 'desc' })
       .then(ideas => {
          res.render('admin/home', {
             ideas: ideas
@@ -86,72 +114,16 @@ app.get('/admin/password/enpm613', (req, res) => {
       })
 });
 
-//Process videos form
-app.post('/ideas', (req, res) => {
-   let errors = [];
 
-   if (!req.body.title) {
-      errors.push({ text: 'Please add a title' });
-   }
-   if (!req.body.details) {
-      errors.push({ text: 'Please add some details' });
-   }
-   if (!req.body.url) {
-      errors.push({ text: 'Please add an url' });
-   }
-   if (!req.body.type) {
-      errors.push({ text: 'Please select a type' });
-   }
 
-   if (errors.length > 0) {
-      res.render('ideas/add', {
-         errors: errors,
-         title: req.body.title,
-         details: req.body.details,
-         url: req.body.url,
-         type: req.body.type,
-      });
-   } else {
-      const newUser = {
-         title: req.body.title,
-         details: req.body.details,
-         url: req.body.url,
-         type: req.body.type,
-      }
-      new Idea(newUser)
-         .save()
-         .then(idea => {
-            res.redirect('/');
-         })
-   }
-});
 
-//edit form process
-app.put('/ideas/:id', (req, res) => {
-   Idea.findOne({
-      _id: req.params.id
-   })
-   .then(idea => {
-      //new values
-      idea.title = req.body.title,
-      idea.details = req.body.details,
-      idea.url = req.body.url,
-      idea.type = req.body.type
 
-      idea.save()
-         .then(idea => {
-            res.redirect('/admin/password/enpm613')
-         })
-   });
-});
 
-//Delete idea
-app.delete('/ideas/:id', (req, res) => {
-   Idea.remove({_id: req.params.id})
-      .then(() => {
-         res.redirect('/admin/password/enpm613');
-      })
-})
+//use routes
+app.use('/ideas', ideas);
+app.use('/users', users);
+
+
 
 /**const port = process.env.PORT || 5000;
 
