@@ -32,9 +32,16 @@ require('./models/Idea');
 const Idea = mongoose.model('ideas');
 
 
-//Handlebars middleware
+//Handlebars middleware; block helper allows custom <head> in layouts (https://tinyurl.com/ygukcaqo)
 app.engine('handlebars', exphbs({
-   defaultLayout: 'main'
+   defaultLayout: 'main',
+   helpers: {
+      section: function(name, options) {
+        if(!this._sections) this._sections = {}
+        this._sections[name] = options.fn(this)
+        return null
+      },
+    },
 }));
 app.set('view engine', 'handlebars');
 
@@ -53,8 +60,8 @@ app.use(session({
    secret: 'secret',
    resave: true,
    saveUninitialized: true,
- }));
- 
+}));
+
 
 //passport middleware( after express-session only)
 app.use(passport.initialize());
@@ -63,7 +70,7 @@ app.use(passport.session());
 app.use(flash());
 
 //Global variables
-app.use(function(req, res, next){
+app.use(function (req, res, next) {
    res.locals.success_msg = req.flash('success_msg');
    res.locals.error_msg = req.flash('error_msg');
    res.locals.error = req.flash('error');
@@ -86,7 +93,7 @@ app.get('/about', (req, res) => {
    res.render('about');
 });
 
-//Boydbuilding route
+//Bodybuilding route
 app.get('/bodybuilding', (req, res) => {
    res.render('bodybuilding');
 });
