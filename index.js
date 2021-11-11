@@ -86,7 +86,7 @@ app.get('/about', (req, res) => {
    res.render('about');
 });
 
-//Boydbuilding route
+//Bodybuilding route
 app.get('/bodybuilding', (req, res) => {
    res.render('bodybuilding');
 });
