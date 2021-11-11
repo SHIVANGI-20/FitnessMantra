@@ -32,9 +32,16 @@ require('./models/Idea');
 const Idea = mongoose.model('ideas');
 
 
-//Handlebars middleware
+//Handlebars middleware; block helper allows custom <head> in layouts (https://tinyurl.com/ygukcaqo)
 app.engine('handlebars', exphbs({
-   defaultLayout: 'main'
+   defaultLayout: 'main',
+   helpers: {
+      section: function(name, options) {
+        if(!this._sections) this._sections = {}
+        this._sections[name] = options.fn(this)
+        return null
+      },
+    },
 }));
 app.set('view engine', 'handlebars');
 
